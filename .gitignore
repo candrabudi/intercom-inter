@@ -1,0 +1,7 @@
+.venv/
+audio-stt/.venv/
+__pycache__/
+*.py[cod]
+.env
+models/
+storage/

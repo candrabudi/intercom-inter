@@ -1,0 +1,6 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+sounddevice>=0.5,<1
+numpy>=1.26,<3
+webrtcvad-wheels>=2.0.14,<3
+faster-whisper>=1.1,<2
