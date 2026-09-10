@@ -66,7 +66,12 @@ class SpeechSegmenter:
             while len(pcm_buffer) >= frame_samples:
                 frame = pcm_buffer[:frame_samples]
                 pcm_buffer = pcm_buffer[frame_samples:]
-                is_speech = vad.is_speech(frame.tobytes(), 16000)
+                # Some USB/Bluetooth headset drivers produce audio that WebRTC VAD
+                # classifies as silence even while the level meter clearly moves.
+                # Keep WebRTC as the primary gate, but accept a normal speaking
+                # level as a fallback so a valid microphone never looks silent.
+                frame_level = float(np.sqrt(np.mean(np.square(frame.astype(np.float32) / 32768))))
+                is_speech = vad.is_speech(frame.tobytes(), 16000) or frame_level >= 0.012
                 frame_end_ms = captured_at_ms
                 last_frame_end_ms = frame_end_ms
                 if is_speech:

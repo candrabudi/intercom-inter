@@ -114,7 +114,7 @@ class LiveMicTestManager:
             self.stop()
             self._label = label
             test_settings = replace(self._settings, language=language or self._settings.language)
-            self._stt = TranscriptionService(test_settings, self._on_final)
+            self._stt = TranscriptionService(test_settings, self._on_final, self._on_error)
             self._segmenter = SpeechSegmenter(
                 test_settings,
                 lambda audio, start, end: self._stt and self._stt.submit(label, audio, start, end),
@@ -148,3 +148,6 @@ class LiveMicTestManager:
             "type": "mic.test.transcript", "label": speaker, "text": text,
             "started_at_ms": started_at_ms, "ended_at_ms": ended_at_ms,
         })
+
+    def _on_error(self, speaker: str, error: str) -> None:
+        self._publish({"type": "mic.test.error", "label": speaker, "error": error})

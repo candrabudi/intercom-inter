@@ -13,9 +13,15 @@ from .config import Settings
 class TranscriptionService:
     """One shared Whisper model with independent speaker queues."""
 
-    def __init__(self, settings: Settings, on_final: Callable[[str, str, int, int], None]):
+    def __init__(
+        self,
+        settings: Settings,
+        on_final: Callable[[str, str, int, int], None],
+        on_error: Callable[[str, str], None] | None = None,
+    ):
         self._settings = settings
         self._on_final = on_final
+        self._on_error = on_error
         self._model: WhisperModel | None = None
         self._model_lock = threading.Lock()
         self._queues: dict[str, queue.Queue[tuple[np.ndarray, int, int]]] = {
@@ -75,3 +81,5 @@ class TranscriptionService:
                     self._on_final(speaker, text, started_at_ms, ended_at_ms)
             except Exception as exc:  # Do not terminate a live session on one bad audio segment.
                 print(f"STT {speaker} error: {exc}")
+                if self._on_error:
+                    self._on_error(speaker, str(exc))

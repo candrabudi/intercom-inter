@@ -45,7 +45,7 @@ class SessionManager:
             self._started_at_ms = int(time.time() * 1000)
             devices = {"mic_a": mic_a, "speaker_a": speaker_a, "mic_b": mic_b, "speaker_b": speaker_b}
             self._store.create(session_id, devices)
-            self._stt = TranscriptionService(self._settings, self._on_final)
+            self._stt = TranscriptionService(self._settings, self._on_final, self._on_error)
             self._segmenters = {
                 speaker: SpeechSegmenter(
                     self._settings,
@@ -98,6 +98,10 @@ class SessionManager:
         }
         self._store.add(session_id, event)
         self._publish(event)
+
+    def _on_error(self, speaker: str, error: str) -> None:
+        self._last_error = error
+        self._publish({"type": "transcript.error", "speaker": speaker, "error": error})
 
     def _cleanup(self) -> None:
         if self._router:
