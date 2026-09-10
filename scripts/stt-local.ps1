@@ -88,7 +88,7 @@ try {
     if ($Action -eq 'run') {
         Write-Host ''
         Write-Host 'Menjalankan aplikasi di http://127.0.0.1:8000' -ForegroundColor Green
-        & $python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+        & $python -m uvicorn stt_local.main:app --app-dir src --host 127.0.0.1 --port 8000
     }
 } finally {
     Pop-Location

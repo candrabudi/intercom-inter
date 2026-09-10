@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.store import SessionStore
+from stt_local.store import SessionStore
 
 
 class SessionStoreTests(unittest.TestCase):

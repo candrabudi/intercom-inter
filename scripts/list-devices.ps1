@@ -4,7 +4,7 @@ $serviceRoot = Join-Path $projectRoot 'audio-stt'
 Set-Location $serviceRoot
 
 if (Test-Path '.venv\Scripts\python.exe') {
-    & '.venv\Scripts\python.exe' -c "from app.devices import list_devices; from pprint import pprint; pprint(list_devices())"
+    & '.venv\Scripts\python.exe' -c "from stt_local.devices import list_devices; from pprint import pprint; pprint(list_devices())"
 } else {
-    python -c "from app.devices import list_devices; from pprint import pprint; pprint(list_devices())"
+    python -c "from stt_local.devices import list_devices; from pprint import pprint; pprint(list_devices())"
 }
