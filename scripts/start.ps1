@@ -38,6 +38,9 @@ function Ensure-WhisperModel([string]$Model) {
     }
     Write-Host "[SETUP] Mengunduh Whisper $Model..." -ForegroundColor Yellow
     & $python -c "from faster_whisper import WhisperModel; WhisperModel('$Model', device='cpu', compute_type='int8', download_root=r'$modelsRoot'); print('Whisper $Model siap')"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Gagal mengunduh Whisper $Model. Pastikan dependency Python dan koneksi internet tersedia."
+    }
 }
 
 Write-Host ''
@@ -56,12 +59,17 @@ try {
 
     try {
         & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'Dependency belum terpasang.' }
         Write-Host '[OK] Dependensi Python tersedia'
     } catch {
         Write-Host '[SETUP] Memasang dependency requirements.txt...' -ForegroundColor Yellow
         & $python -m pip install --upgrade pip
+        if ($LASTEXITCODE -ne 0) { throw 'Gagal memperbarui pip.' }
         & $python -m pip install -r requirements.txt
+        if ($LASTEXITCODE -ne 0) { throw 'Gagal memasang requirements.txt. Periksa koneksi internet dan pesan pip di atas.' }
         & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'Dependency Python masih tidak dapat diimpor setelah instalasi.' }
+        Write-Host '[OK] Dependensi Python berhasil dipasang'
     }
 
     New-Item -ItemType Directory -Path $modelsRoot -Force | Out-Null
