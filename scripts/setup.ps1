@@ -36,15 +36,26 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Gagal membuat virtual environment Python.' }
     }
     $python = $venvPython
-    & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" 2>$null | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    $dependenciesReady = $false
+    try {
+        & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" 2>$null | Out-Null
+        $dependenciesReady = $LASTEXITCODE -eq 0
+    } catch {
+        # A new virtual environment has no packages yet. This is an expected setup state.
+        $dependenciesReady = $false
+    }
+    if (-not $dependenciesReady) {
         Write-Host '[SETUP] Memasang seluruh Python requirements...' -ForegroundColor Yellow
         & $python -m pip install --upgrade pip
         & $python -m pip install -r requirements.txt
         if ($LASTEXITCODE -ne 0) { throw 'Gagal memasang Python requirements. Periksa koneksi internet.' }
     }
-    & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" 2>$null | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'Dependency Python belum siap setelah instalasi.' }
+    try {
+        & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'Dependency Python belum siap setelah instalasi.' }
+    } catch {
+        throw 'Dependency Python belum siap setelah instalasi.'
+    }
     Write-Host '[OK] Python dan seluruh requirements siap'
     New-Item -ItemType Directory -Path $modelsRoot -Force | Out-Null
     Ensure-Model 'small'
