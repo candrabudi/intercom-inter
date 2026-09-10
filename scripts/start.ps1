@@ -58,7 +58,7 @@ try {
     Write-Host "[OK] Python: $(& $python --version)"
 
     try {
-        & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" | Out-Null
+        & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" 2>$null | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'Dependency belum terpasang.' }
         Write-Host '[OK] Dependensi Python tersedia'
     } catch {
