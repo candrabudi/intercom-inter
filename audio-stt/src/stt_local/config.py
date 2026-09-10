@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+# Repository root: ``audio-stt/src/stt_local/config.py`` → workspace root.
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
 @dataclass(frozen=True)
