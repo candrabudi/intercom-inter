@@ -45,15 +45,23 @@ Write-Host 'Memulai STT Local' -ForegroundColor Cyan
 
 Push-Location $serviceRoot
 try {
-    $python = Get-Python
-    & $python --version | Out-Null
+    $systemPython = Get-Python
+    $venvPython = Join-Path $serviceRoot '.venv\Scripts\python.exe'
+    if (-not (Test-Path $venvPython)) {
+        Write-Host '[SETUP] Membuat virtual environment Python...' -ForegroundColor Yellow
+        & $systemPython -m venv .venv
+    }
+    $python = $venvPython
+    Write-Host "[OK] Python: $(& $python --version)"
 
     try {
         & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" | Out-Null
         Write-Host '[OK] Dependensi Python tersedia'
     } catch {
-        Write-Host '[SETUP] Memasang dependensi Python...' -ForegroundColor Yellow
+        Write-Host '[SETUP] Memasang dependency requirements.txt...' -ForegroundColor Yellow
+        & $python -m pip install --upgrade pip
         & $python -m pip install -r requirements.txt
+        & $python -c "import fastapi, sounddevice, webrtcvad, faster_whisper" | Out-Null
     }
 
     New-Item -ItemType Directory -Path $modelsRoot -Force | Out-Null
