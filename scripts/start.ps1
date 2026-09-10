@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 
-# Satu perintah untuk device baru maupun device yang sudah siap.
+# Satu perintah untuk device baru maupun device yang sudah siap. Default memakai Whisper small.
 & (Join-Path $PSScriptRoot 'setup.ps1')
 
 $serviceRoot = Join-Path $projectRoot 'audio-stt'

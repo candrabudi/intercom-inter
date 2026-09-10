@@ -72,10 +72,16 @@ Jalankan dari folder proyek:
 .\scripts\stt-local.ps1 -Action run
 ```
 
-Untuk penggunaan paling sederhana, jalankan satu perintah ini saja. Ia memasang kebutuhan yang belum ada, memastikan Whisper `small`, `medium`, dan Qwen 3B tersedia, lalu membuka aplikasi:
+Untuk penggunaan paling sederhana, jalankan satu perintah ini saja. Ia memasang kebutuhan yang belum ada, memastikan Whisper `small` dan Qwen 3B tersedia, lalu membuka aplikasi:
 
 ```powershell
 .\scripts\start.ps1
 ```
 
 `start.ps1` otomatis memanggil `setup.ps1`. Jalankan `setup.ps1` sendiri bila hanya ingin menyiapkan seluruh kebutuhan tanpa membuka aplikasi.
+
+Model `medium` adalah opsional dan lebih besar. Unduh hanya jika diperlukan:
+
+```powershell
+.\scripts\setup.ps1 -WithMedium
+```

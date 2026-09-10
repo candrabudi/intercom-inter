@@ -1,3 +1,5 @@
+param([switch]$WithMedium)
+
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $serviceRoot = Join-Path $projectRoot 'audio-stt'
@@ -26,8 +28,24 @@ function Ensure-Model([string]$Model) {
     $modelPath = Join-Path $modelsRoot "models--Systran--faster-whisper-$Model"
     if (Test-Path $modelPath) { Write-Host "[OK] Whisper $Model tersedia"; return }
     Write-Host "[SETUP] Mengunduh Whisper $Model..." -ForegroundColor Yellow
-    & $python -c "from faster_whisper import WhisperModel; WhisperModel('$Model', device='cpu', compute_type='int8', download_root=r'$modelsRoot')"
-    if ($LASTEXITCODE -ne 0) { throw "Gagal mengunduh Whisper $Model. Periksa koneksi internet." }
+    $downloadCode = "from faster_whisper import WhisperModel; WhisperModel('$Model', device='cpu', compute_type='int8', download_root=r'$modelsRoot')"
+    $job = Start-Job -ScriptBlock {
+        param($pythonExe, $code)
+        & $pythonExe -c $code
+        exit $LASTEXITCODE
+    } -ArgumentList $python, $downloadCode
+    while ($job.State -eq 'Running') {
+        $bytes = if (Test-Path $modelPath) { (Get-ChildItem $modelPath -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { 0 }
+        $megabytes = [math]::Round($bytes / 1MB, 1)
+        Write-Host "`r[DOWNLOAD] Whisper ${Model}: $megabytes MB diterima..." -NoNewline
+        Start-Sleep -Seconds 5
+    }
+    Write-Host ''
+    Receive-Job $job | Write-Host
+    $failed = $job.State -ne 'Completed' -or $job.ChildJobs[0].JobStateInfo.State -eq 'Failed'
+    Remove-Job $job -Force
+    if ($failed) { throw "Gagal mengunduh Whisper $Model. Periksa koneksi internet." }
+    Write-Host "[OK] Whisper $Model siap"
 }
 
 Write-Host ''
@@ -70,7 +88,7 @@ try {
     Write-Host '[OK] Python dan seluruh requirements siap'
     New-Item -ItemType Directory -Path $modelsRoot -Force | Out-Null
     Ensure-Model 'small'
-    Ensure-Model 'medium'
+    if ($WithMedium) { Ensure-Model 'medium' }
     if (-not (Test-Path $ollamaExe)) {
         Write-Host '[SETUP] Memasang Ollama...' -ForegroundColor Yellow
         irm https://ollama.com/install.ps1 | iex
