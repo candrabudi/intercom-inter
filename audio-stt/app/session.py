@@ -6,9 +6,9 @@ from datetime import UTC, datetime
 
 from .config import Settings
 from .devices import validate_session_devices
-from .router import AudioRouter
-from .store import SessionStore
-from .stt import TranscriptionService
+from .infrastructure.audio.router import AudioRouter
+from .infrastructure.storage.sessions import SessionStore
+from .infrastructure.stt.whisper import TranscriptionService
 from .vad import SpeechSegmenter
 
 

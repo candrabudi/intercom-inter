@@ -10,7 +10,7 @@ import sounddevice as sd
 
 from .devices import input_candidates, validate_input
 from .config import Settings
-from .stt import TranscriptionService
+from .infrastructure.stt.whisper import TranscriptionService
 from .vad import SpeechSegmenter
 
 
