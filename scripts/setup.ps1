@@ -1,4 +1,7 @@
-param([switch]$WithMedium)
+param(
+    [switch]$WithMedium,
+    [switch]$WithLlm
+)
 
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -89,16 +92,20 @@ try {
     New-Item -ItemType Directory -Path $modelsRoot -Force | Out-Null
     Ensure-Model 'small'
     if ($WithMedium) { Ensure-Model 'medium' }
-    if (-not (Test-Path $ollamaExe)) {
-        Write-Host '[SETUP] Memasang Ollama...' -ForegroundColor Yellow
-        irm https://ollama.com/install.ps1 | iex
+    if ($WithLlm) {
+        if (-not (Test-Path $ollamaExe)) {
+            Write-Host '[SETUP] Memasang Ollama...' -ForegroundColor Yellow
+            irm https://ollama.com/install.ps1 | iex
+        }
+        if (-not (Test-Path $ollamaExe)) { throw 'Ollama belum dapat ditemukan setelah instalasi.' }
+        $ollamaModels = & $ollamaExe list 2>&1 | Out-String
+        if ($ollamaModels -notmatch 'qwen2\.5:3b') {
+            Write-Host '[SETUP] Mengunduh Qwen 3B...' -ForegroundColor Yellow
+            & $ollamaExe pull qwen2.5:3b
+            if ($LASTEXITCODE -ne 0) { throw 'Gagal mengunduh Qwen 3B. Periksa koneksi internet.' }
+        }
+        Write-Host '[OK] Qwen 3B tersedia'
+    } else {
+        Write-Host '[INFO] LLM Editor tidak diaktifkan pada setup default.'
     }
-    if (-not (Test-Path $ollamaExe)) { throw 'Ollama belum dapat ditemukan setelah instalasi.' }
-    $ollamaModels = & $ollamaExe list 2>&1 | Out-String
-    if ($ollamaModels -notmatch 'qwen2\.5:3b') {
-        Write-Host '[SETUP] Mengunduh Qwen 3B...' -ForegroundColor Yellow
-        & $ollamaExe pull qwen2.5:3b
-        if ($LASTEXITCODE -ne 0) { throw 'Gagal mengunduh Qwen 3B. Periksa koneksi internet.' }
-    }
-    Write-Host '[OK] Qwen 3B tersedia'
 } finally { Pop-Location }

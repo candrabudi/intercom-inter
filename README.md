@@ -72,7 +72,7 @@ Jalankan dari folder proyek:
 .\scripts\stt-local.ps1 -Action run
 ```
 
-Untuk penggunaan paling sederhana, jalankan satu perintah ini saja. Ia memasang kebutuhan yang belum ada, memastikan Whisper `small` dan Qwen 3B tersedia, lalu membuka aplikasi:
+Untuk penggunaan paling sederhana, jalankan satu perintah ini saja. Ia memasang kebutuhan yang belum ada, memastikan Whisper `small` tersedia, lalu membuka aplikasi:
 
 ```powershell
 .\scripts\start.ps1
@@ -84,4 +84,10 @@ Model `medium` adalah opsional dan lebih besar. Unduh hanya jika diperlukan:
 
 ```powershell
 .\scripts\setup.ps1 -WithMedium
+```
+
+LLM Editor tidak dipasang pada setup default. Bila dibutuhkan nanti, instal Ollama dan Qwen 3B dengan:
+
+```powershell
+.\scripts\setup.ps1 -WithLlm
 ```
