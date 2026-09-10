@@ -77,3 +77,5 @@ Untuk penggunaan paling sederhana, jalankan satu perintah ini saja. Ia memasang 
 ```powershell
 .\scripts\start.ps1
 ```
+
+Pada Windows baru, skrip ini juga dapat memasang Python 3.11 melalui `winget` dan Ollama dari installer resminya. Jika installer meminta terminal baru, tutup PowerShell, buka kembali, lalu ulangi perintah yang sama.
