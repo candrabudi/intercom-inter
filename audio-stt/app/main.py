@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .config import settings
-from .devices import list_devices
+from .devices import list_devices, list_headset_pairs
 from .mic_test import LiveMicTestManager
 from .session import SessionManager
 from .websocket import WebSocketHub
@@ -46,7 +46,8 @@ class StartMicTestRequest(BaseModel):
 
 @app.get("/api/devices")
 def get_devices():
-    return {"devices": list_devices()}
+    devices = list_devices()
+    return {"devices": devices, "headset_pairs": list_headset_pairs(devices)}
 
 
 @app.get("/api/status")

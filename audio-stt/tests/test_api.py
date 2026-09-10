@@ -16,7 +16,9 @@ class ApiTests(unittest.TestCase):
         with TestClient(app) as client:
             response = client.get("/api/devices")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(all("kind" in device and "selectable" in device for device in response.json()["devices"]))
+        payload = response.json()
+        self.assertTrue(all("kind" in device and "selectable" in device for device in payload["devices"]))
+        self.assertIn("headset_pairs", payload)
 
 
 if __name__ == "__main__":

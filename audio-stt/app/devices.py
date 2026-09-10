@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 import sounddevice as sd
 
@@ -8,6 +9,7 @@ import sounddevice as sd
 _ALIAS_PREFIXES = ("microsoft sound mapper", "primary sound capture driver", "primary sound driver")
 _SYSTEM_INPUT_MARKERS = ("stereo mix", "loopback", "what u hear")
 _SPEAKER_MARKERS = ("speaker", "speakers", "headphone", "headset", "output")
+_PAIR_NOISE = re.compile(r"\b(microphone|mic|speaker|speakers|headphone|headset|audio|input|output|usb)\b|[()\[\],.-]", re.I)
 
 
 def _is_alias(name: str) -> bool:
@@ -46,6 +48,26 @@ def list_devices() -> list[dict[str, Any]]:
     for item in devices:
         item.setdefault("selectable", False)
     return devices
+
+
+def _pair_key(name: str) -> str:
+    return " ".join(_PAIR_NOISE.sub(" ", name).lower().split())
+
+
+def list_headset_pairs(devices: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Pair physical endpoints only when their Windows device names clearly match."""
+    devices = devices or list_devices()
+    microphones = [item for item in devices if item["kind"] == "microphone" and item["selectable"]]
+    speakers = [item for item in devices if item["kind"] == "speaker" and item["selectable"]]
+    pairs: list[dict[str, Any]] = []
+    used_speakers: set[int] = set()
+    for microphone in microphones:
+        key = _pair_key(microphone["name"])
+        match = next((speaker for speaker in speakers if speaker["id"] not in used_speakers and key and key == _pair_key(speaker["name"])), None)
+        if match:
+            used_speakers.add(match["id"])
+            pairs.append({"name": key.title(), "mic_id": microphone["id"], "speaker_id": match["id"]})
+    return pairs
 
 
 def _find_device(device_id: int, expected_kind: str) -> dict[str, Any]:
