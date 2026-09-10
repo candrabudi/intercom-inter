@@ -5,15 +5,21 @@ $modelsRoot = Join-Path $projectRoot 'models\faster-whisper'
 $ollamaExe = Join-Path $env:LOCALAPPDATA 'Programs\Ollama\ollama.exe'
 
 function Get-Python {
-    $command = Get-Command python -ErrorAction SilentlyContinue
-    if ($command) { return $command.Source }
-    Write-Host '[SETUP] Memasang Python 3.11...' -ForegroundColor Yellow
+    $python311 = Join-Path $env:LOCALAPPDATA 'Programs\Python\Python311\python.exe'
+    if (Test-Path $python311) { return $python311 }
+
+    $launcher = Get-Command py -ErrorAction SilentlyContinue
+    if ($launcher) {
+        & $launcher.Source -3.11 --version 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) { return "$($launcher.Source) -3.11" }
+    }
+
+    Write-Host '[SETUP] Python 3.11 belum tersedia. Memasang versi yang kompatibel...' -ForegroundColor Yellow
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if (-not $winget) { throw 'Python dan winget tidak tersedia. Instal Python 3.11 terlebih dahulu dari https://www.python.org/downloads/' }
     & $winget.Source install --id Python.Python.3.11 --exact --accept-package-agreements --accept-source-agreements
-    $pythonPath = Join-Path $env:LOCALAPPDATA 'Programs\Python\Python311\python.exe'
-    if (-not (Test-Path $pythonPath)) { throw 'Python belum dapat ditemukan setelah instalasi.' }
-    return $pythonPath
+    if (-not (Test-Path $python311)) { throw 'Python 3.11 belum dapat ditemukan setelah instalasi.' }
+    return $python311
 }
 
 function Ensure-Model([string]$Model) {
@@ -32,7 +38,12 @@ Push-Location $serviceRoot
 try {
     if (-not (Test-Path $venvPython)) {
         Write-Host '[SETUP] Membuat virtual environment...' -ForegroundColor Yellow
-        & $systemPython -m venv .venv
+        if ($systemPython -like '* -3.11') {
+            $parts = $systemPython -split ' ', 2
+            & $parts[0] $parts[1] -m venv .venv
+        } else {
+            & $systemPython -m venv .venv
+        }
         if ($LASTEXITCODE -ne 0) { throw 'Gagal membuat virtual environment Python.' }
     }
     $python = $venvPython
