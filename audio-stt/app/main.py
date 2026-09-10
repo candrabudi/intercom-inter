@@ -10,14 +10,13 @@ from pydantic import BaseModel
 
 from .config import settings
 from .devices import list_devices, list_headset_pairs
-from .mic_test import LiveMicTestManager
-from .session import SessionManager
-from .websocket import WebSocketHub
+from .container import build_container
 
 
-hub = WebSocketHub()
-manager = SessionManager(settings, hub.publish_from_thread)
-mic_tester = LiveMicTestManager(settings, hub.publish_from_thread)
+container = build_container(settings)
+hub = container.hub
+manager = container.session
+mic_tester = container.mic_test
 
 
 @asynccontextmanager
